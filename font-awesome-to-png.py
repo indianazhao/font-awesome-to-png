@@ -377,8 +377,8 @@ class ListUpdateAction(argparse.Action):
         exit(0)
 
 
-def export_icon(icon, size, filename, font, color):
-    image = Image.new("RGBA", (size, size), color=(0,0,0,0))
+def export_icon(icon, size, dx, filename, font, color):
+    image = Image.new("RGBA", (size+dx, size), color=(0,0,0,0))
 
     draw = ImageDraw.Draw(image)
 
@@ -388,7 +388,7 @@ def export_icon(icon, size, filename, font, color):
     # Determine the dimensions of the icon
     width,height = draw.textsize(icons[icon], font=font)
 
-    draw.text(((size - width) / 2, (size - height) / 2), icons[icon],
+    draw.text(((size+dx - width) / 2, (size - height) / 2), icons[icon],
             font=font, fill=color)
 
     # Get bounding box
@@ -397,11 +397,11 @@ def export_icon(icon, size, filename, font, color):
     if bbox:
         image = image.crop(bbox)
 
-    borderw = int((size - (bbox[2] - bbox[0])) / 2)
+    borderw = int((size+dx - (bbox[2] - bbox[0])) / 2)
     borderh = int((size - (bbox[3] - bbox[1])) / 2)
 
     # Create background image
-    bg = Image.new("RGBA", (size, size), (0,0,0,0))
+    bg = Image.new("RGBA", (size+dx, size), (0,0,0,0))
 
     bg.paste(image, (borderw,borderh))
 
@@ -454,12 +454,15 @@ if __name__ == '__main__':
             help=argparse.SUPPRESS)
     parser.add_argument("--size", type=int, default=16,
             help="Icon size in pixels (default: 16)")
+    parser.add_argument("--dx", type=int, default=0,
+            help="Extending width of icon (default: 0)")
 
     args = parser.parse_args()
     icon = args.icon
     size = args.size
     font = args.font
     color = args.color
+    dx = args.dx
 
     if args.font:
         if not path.isfile(args.font) or not access(args.font, R_OK):
@@ -497,7 +500,6 @@ if __name__ == '__main__':
                 filename = icon + ".png"
 
         print("Exporting icon \"%s\" as %s (%ix%i pixels)" %
-                (icon, filename, size, size))
+                (icon, filename, size+dx, size))
 
-        export_icon(icon, size, filename, font, color)
-
+        export_icon(icon, size, dx, filename, font, color)
