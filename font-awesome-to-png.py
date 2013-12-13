@@ -376,6 +376,19 @@ class ListUpdateAction(argparse.Action):
         print("}")
         exit(0)
 
+def HTMLColorToRGB(colorstring):
+    """ convert #RRGGBBAA to an (R, G, B, A) tuple """
+    colorstring = colorstring.strip()
+    if colorstring[0] == '#': colorstring = colorstring[1:]
+    colorlen = len(colorstring)
+    if colorlen != 6 and colorlen != 8:
+        raise ValueError, "input #%s is not in #RRGGBB or #RRGGBBAA format" % colorstring
+    r, g, b = colorstring[:2], colorstring[2:4], colorstring[4:6]
+    a = "FF"
+    if colorlen == 8:
+        a = colorstring[6:]
+    r, g, b, a = [int(n, 16) for n in (r, g, b, a)]
+    return (r, g, b, a)
 
 def export_icon(icon, size, dx, filename, font, color):
     image = Image.new("RGBA", (size+dx, size), color=(0,0,0,0))
@@ -388,8 +401,9 @@ def export_icon(icon, size, dx, filename, font, color):
     # Determine the dimensions of the icon
     width,height = draw.textsize(icons[icon], font=font)
 
+    r, g, b, a = HTMLColorToRGB(color)
     draw.text(((size+dx - width) / 2, (size - height) / 2), icons[icon],
-            font=font, fill=color)
+            font=font, fill=(r,g,b,a))
 
     # Get bounding box
     bbox = image.getbbox()
